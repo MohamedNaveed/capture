@@ -17,6 +17,7 @@ import math
 import object_recognition_capture
 import time
 
+
 class TurnTable(ecto.Cell):
     '''Uses the arbotix library to talk to servoes.'''
 
@@ -84,10 +85,9 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     graph = []
 
     # try several parameter combinations
-    source = create_source('image_pipeline', 'OpenNISource', outputs_list=['K_depth', 'K_image', 'camera', 'image',
-                                                                           'depth', 'points3d',
-                                                                           'mask_depth'], res=res, fps=fps)
-
+    source = create_source('image_pipeline', 'OpenNISubscriber', outputs_list=['K_depth', 'K_image', 'image',
+                                                                           'depth', 'points3d', 'mask_depth'], res=res, fps=fps)
+    #TODO joder...  no va por 'camera'  pero aparte los frames estan harcoded!!! 
     # convert the image to grayscale
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
     graph += [source['image'] >> rgb2gray[:] ]
@@ -105,7 +105,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     if orb_template:
         # find the pose using ORB
         poser = OrbPoseEstimator(directory=orb_template, show_matches=orb_matches)
-        graph += [ source['image', 'K_image', 'mask_depth', 'points3d'] >> poser['color_image', 'K_image', 'mask', 'points3d'],
+        graph += [ source['image', 'K_image', 'depth_mask', 'points3d'] >> poser['color_image', 'K_image', 'mask', 'points3d'],
                    rgb2gray[:] >> poser['image']
                  ]
     else:
@@ -157,11 +157,13 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     maskMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
     graph += [ masker['mask'] >> maskMsg[:] ]
 
-    camera2cv = CameraModelToCv()
-    cameraMsg = Cv2CameraInfo(frame_id='/camera_rgb_optical_frame')
-    graph += [source['camera'] >> camera2cv['camera'],
-              camera2cv['K', 'D', 'image_size'] >> cameraMsg['K', 'D', 'image_size']
-              ]
+    #camera2cv = CameraModelToCv()
+    #cameraMsg = Cv2CameraInfo(frame_id='/camera_rgb_optical_frame')
+    #graph += [source['K_image','K_depth', 'image_size'] >> cameraMsg['K', 'D', 'image_size']
+    #          ]
+
+
+
     #display the mask
     mask_display = object_recognition_capture.MaskDisplay()
     mask_display_highgui = highgui.imshow(name='mask')
@@ -185,7 +187,9 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
         graph += [
                   rgbMsg[:] >> bagwriter['image'],
                   depthMsg[:] >> bagwriter['depth'],
-                  cameraMsg[:] >> (bagwriter['image_ci'], bagwriter['depth_ci']),
+                  source['depth_info_message'] >> bagwriter['depth_ci'],
+                  source['image_info_message'] >> bagwriter['image_ci'],
+                  #cameraMsg[:] >> (bagwriter['image_ci'], bagwriter['depth_ci']),
                   poseMsg['pose'] >> bagwriter['pose'],
                   maskMsg[:] >> bagwriter['mask'],
                   ]
