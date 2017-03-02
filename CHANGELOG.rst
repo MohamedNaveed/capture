@@ -2,6 +2,20 @@
 Changelog for package object_recognition_capture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.2 (2016-04-24)
+------------------
+* compile with OpenCV3
+* Contributors: Vincent Rabaud
+
+0.3.1 (2016-03-13)
+------------------
+* Use "mono8" for mask and swap brg to rgb
+* Fix encoding when saving bag file
+* use catkin macro to install Python scripts
+* cleanup tests
+* clean build dependencies
+* Contributors: JimmyDaSilva, Vincent Rabaud
+
 0.3.0 (2014-07-27)
 ------------------
 * make sure doc works with the latest ecto
