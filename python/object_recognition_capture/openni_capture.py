@@ -143,7 +143,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
 
     # publish the source data
     rgbMsg = Mat2Image(frame_id='/camera_rgb_optical_frame', swap_rgb=True, encoding='rgb8')
-    depthMsg = Mat2Image(frame_id='/camera_rgb_optical_frame', encoding='mono16')
+    depthMsg = Mat2Image(frame_id='/camera_rgb_optical_frame', encoding='32FC1')
     graph += [ source['depth'] >> depthMsg[:],
                source['image'] >> rgbMsg[:] ]
 
